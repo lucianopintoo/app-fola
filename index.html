@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Fila - Centro Umbandista</title>
+</head>
+<body>
+    <h1>Gestão de Fila - Centro Umbandista</h1>
+
+    <section id="cadastro">
+        <h2>Cadastro</h2>
+        <form id="cadastroForm">
+            <input type="text" id="nome" placeholder="Nome" required><br>
+            <input type="number" id="idade" placeholder="Idade" required><br>
+            <input type="text" id="genero" placeholder="Gênero" required><br>
+            <input type="text" id="motivo" placeholder="Motivo" required><br>
+            <button type="submit">Cadastrar</button>
+        </form>
+    </section>
+
+    <section id="senha">
+        <h2>Obter Senha</h2>
+        <button onclick="obterSenha()">Gerar Senha</button>
+        <p id="senhaDisplay"></p>
+    </section>
+
+    <section id="fila">
+        <h2>Fila de Atendimento</h2>
+        <button onclick="visualizarFila()">Visualizar Fila</button>
+        <ul id="filaDisplay"></ul>
+    </section>
+
+    <script>
+        let consulenteID = null;
+
+        // Função de Cadastro
+        document.getElementById('cadastroForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nome = document.getElementById('nome').value;
+            const idade = document.getElementById('idade').value;
+            const genero = document.getElementById('genero').value;
+            const motivo = document.getElementById('motivo').value;
+
+            const response = await fetch('/cadastro', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome, idade, genero, motivo })
+            });
+            const data = await response.json();
+            consulenteID = data.consulente.id;
+            alert(data.mensagem);
+        });
+
+        // Função para Obter Senha
+        async function obterSenha() {
+            const response = await fetch('/gerar-senha', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: consulenteID })
+            });
+            const data = await response.json();
+            document.getElementById('senhaDisplay').innerText = `Sua senha é: ${data.senha}`;
+        }
+
+        // Função para Visualizar Fila
+        async function visualizarFila() {
+            const response = await fetch('/fila');
+            const fila = await response.json();
+            const filaDisplay = document.getElementById('filaDisplay');
+            filaDisplay.innerHTML = '';
+            fila.forEach((item) => {
+                const li = document.createElement('li');
+                li.innerText = `Nome: ${item.nome}, Senha: ${item.senha}`;
+                filaDisplay.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
